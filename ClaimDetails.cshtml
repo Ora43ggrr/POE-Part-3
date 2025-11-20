@@ -1,0 +1,151 @@
+﻿@model POE_Part_3.Models.Claim
+@{
+    ViewData["Title"] = "Claim Details";
+}
+
+<div class="container">
+    <h2 class="text-blue mb-4">Claim Details</h2>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Claim Information - @Model.ClaimId</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <table class="table table-bordered">
+                        <tr>
+                            <th>Claim ID:</th>
+                            <td>@Model.ClaimId</td>
+                        </tr>
+                        <tr>
+                            <th>Lecturer:</th>
+                            <td>@Model.LecturerName</td>
+                        </tr>
+                        <tr>
+                            <th>Period:</th>
+                            <td>@System.Globalization.DateTimeFormatInfo.CurrentInfo.GetMonthName(Model.Month) @Model.Year</td>
+                        </tr>
+                        <tr>
+                            <th>Status:</th>
+                            <td><span class="status-badge status-@Model.Status.ToLower()">@Model.Status</span></td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <table class="table table-bordered">
+                        <tr>
+                            <th>Hours Worked:</th>
+                            <td>@Model.HoursWorked</td>
+                        </tr>
+                        <tr>
+                            <th>Hourly Rate:</th>
+                            <td>R @Model.HourlyRate.ToString("N2")</td>
+                        </tr>
+                        <tr>
+                            <th>Total Amount:</th>
+                            <td>R @Model.TotalAmount.ToString("N2")</td>
+                        </tr>
+                        <tr>
+                            <th>Submission Date:</th>
+                            <td>@Model.SubmissionDate.ToString("dd MMM yyyy HH:mm")</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label"><strong>Description:</strong></label>
+                <p class="form-control-plaintext">@Model.Description</p>
+            </div>
+
+            @if (Model.ApprovalDate.HasValue)
+            {
+                <div class="alert alert-info">
+                    <strong>Approval Information:</strong><br>
+                    Approved by: @Model.ApprovedBy<br>
+                    Approval Date: @Model.ApprovalDate.Value.ToString("dd MMM yyyy HH:mm")
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(Model.PaymentReference))
+            {
+                <div class="alert alert-success">
+                    <strong>Payment Information:</strong><br>
+                    Payment Reference: @Model.PaymentReference<br>
+                    Payment Date: @Model.PaymentDate?.ToString("dd MMM yyyy HH:mm")
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Supporting Documents Section -->
+    @if (ViewBag.Documents != null && ((List<POE_Part_3.Models.Document>)ViewBag.Documents).Any())
+    {
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">Supporting Documents</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Document Name</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                                <th>Upload Date</th>
+                                <th>Size</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var document in (List<POE_Part_3.Models.Document>)ViewBag.Documents)
+                            {
+                                <tr>
+                                    <td>@document.FileName</td>
+                                    <td>@document.DocumentType</td>
+                                    <td>@document.Description</td>
+                                    <td>@document.UploadDate.ToString("dd MMM yyyy")</td>
+                                    <td>@((document.FileSize / 1024f / 1024f).ToString("0.0")) MB</td>
+                                    <td>
+                                        <a href="#" class="btn btn-sm btn-outline-primary">View</a>
+                                        <a href="#" class="btn btn-sm btn-outline-success">Download</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card mt-4">
+            <div class="card-body text-center">
+                <p class="text-muted">No supporting documents uploaded for this claim.</p>
+            </div>
+        </div>
+    }
+
+    <div class="mt-4">
+        <a href="@Url.Action("Claims","Home")" class="btn btn-outline-primary">Back to My Claims</a>
+        <a href="@Url.Action("Dashboard","Home")" class="btn btn-outline-secondary">Back to Dashboard</a>
+
+        @if (Context.Session.GetString("UserRole") == "ProgrammeCoordinator" || Context.Session.GetString("UserRole") == "AcademicManager")
+        {
+            <a href="@Url.Action("ReviewClaims","Home")" class="btn btn-outline-info">Back to Review</a>
+        }
+
+        @if (Context.Session.GetString("UserRole") == "HR")
+        {
+            <a href="@Url.Action("PaymentProcessing","Home")" class="btn btn-outline-info">Back to Payments</a>
+        }
+    </div>
+</div>

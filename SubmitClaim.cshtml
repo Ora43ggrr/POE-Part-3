@@ -1,0 +1,193 @@
+﻿@{
+    ViewData["Title"] = "Submit Claim";
+}
+
+<div class="container">
+    <h2 class="text-blue mb-4">Submit New Claim</h2>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    <div class="claim-form">
+        <form method="post" asp-action="SubmitClaim" enctype="multipart/form-data">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="claimMonth" class="form-label">Claim Month</label>
+                    <select class="form-select" id="claimMonth" name="claimMonth" required>
+                        <option value="">Select Month</option>
+                        <option value="1">January</option>
+                        <option value="2">February</option>
+                        <option value="3">March</option>
+                        <option value="4">April</option>
+                        <option value="5">May</option>
+                        <option value="6">June</option>
+                        <option value="7">July</option>
+                        <option value="8">August</option>
+                        <option value="9">September</option>
+                        <option value="10">October</option>
+                        <option value="11">November</option>
+                        <option value="12">December</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="claimYear" class="form-label">Claim Year</label>
+                    <input type="number" class="form-control" id="claimYear" name="claimYear" value="2025" min="2020" max="2030" required>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="hoursWorked" class="form-label">Total Hours Worked</label>
+                <input type="number" class="form-control" id="hoursWorked" name="hoursWorked" step="0.5" min="1" max="200" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="hourlyRate" class="form-label">Hourly Rate (R)</label>
+                <input type="number" class="form-control" id="hourlyRate" name="hourlyRate" step="0.01" min="50" max="1000" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="totalAmount" class="form-label">Total Amount (R)</label>
+                <input type="text" class="form-control" id="totalAmount" value="R 0.00" readonly>
+            </div>
+
+            <div class="mb-3">
+                <label for="description" class="form-label">Description of Work</label>
+                <textarea class="form-control" id="description" name="description" rows="3" placeholder="Describe the work performed during this period..." required></textarea>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">Upload Supporting Documents</label>
+                <div class="mb-2">
+                    <input type="file" class="form-control" id="supportingDocuments" name="supportingDocuments" multiple accept=".pdf,.jpg,.png,.docx,.xlsx">
+                    <div class="form-text">You can select multiple files. Maximum file size: 5MB each. Supported formats: PDF, JPG, PNG, DOCX, XLSX</div>
+                </div>
+                <div id="fileList" class="mt-2"></div>
+            </div>
+
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary">Submit Claim</button>
+                <a href="@Url.Action("Claims","Home")" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Enhanced real-time validation and calculation
+        function validateForm() {
+            let isValid = true;
+            const hours = parseFloat(document.getElementById('hoursWorked').value) || 0;
+            const rate = parseFloat(document.getElementById('hourlyRate').value) || 0;
+            const total = hours * rate;
+
+            // Clear previous errors
+            document.querySelectorAll('.text-danger').forEach(e => e.remove());
+
+            // Validate hours
+            if (hours < 1 || hours > 200) {
+                showError('hoursWorked', 'Hours must be between 1 and 200');
+                isValid = false;
+            }
+
+            // Validate rate
+            if (rate < 50 || rate > 1000) {
+                showError('hourlyRate', 'Hourly rate must be between R50 and R1000');
+                isValid = false;
+            }
+
+            // Validate total
+            if (total > 50000) {
+                showError('totalAmount', 'Total amount cannot exceed R50,000');
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        function showError(fieldId, message) {
+            const field = document.getElementById(fieldId);
+            const error = document.createElement('div');
+            error.className = 'text-danger mt-1';
+            error.innerText = message;
+            field.parentNode.appendChild(error);
+        }
+
+        // Calculate total amount in real-time
+        function calculateTotal() {
+            const hours = parseFloat(document.getElementById('hoursWorked').value) || 0;
+            const rate = parseFloat(document.getElementById('hourlyRate').value) || 0;
+            const total = hours * rate;
+            document.getElementById('totalAmount').value = 'R ' + total.toLocaleString('en-ZA', { minimumFractionDigits: 2 });
+        }
+
+        // Display selected files
+        function displaySelectedFiles() {
+            const fileInput = document.getElementById('supportingDocuments');
+            const fileList = document.getElementById('fileList');
+            fileList.innerHTML = '';
+
+            if (fileInput.files.length > 0) {
+                let fileListHTML = '<strong>Selected Files:</strong><ul class="mt-2">';
+                for (let i = 0; i < fileInput.files.length; i++) {
+                    const file = fileInput.files[i];
+                    const fileSize = (file.size / 1024 / 1024).toFixed(2);
+                    fileListHTML += `<li>${file.name} (${fileSize} MB)</li>`;
+                }
+                fileListHTML += '</ul>';
+                fileList.innerHTML = fileListHTML;
+            }
+        }
+
+        // Initialize event listeners when document is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Claim form calculations
+            const hoursInput = document.getElementById('hoursWorked');
+            const rateInput = document.getElementById('hourlyRate');
+            if (hoursInput && rateInput) {
+                hoursInput.addEventListener('input', calculateTotal);
+                rateInput.addEventListener('input', calculateTotal);
+                // Calculate initial total
+                calculateTotal();
+            }
+
+            // File selection handling
+            const fileInput = document.getElementById('supportingDocuments');
+            if (fileInput) {
+                fileInput.addEventListener('change', displaySelectedFiles);
+            }
+
+            // Real-time validation as user types
+            document.getElementById('hoursWorked').addEventListener('input', function() {
+                calculateTotal();
+                validateForm();
+            });
+
+            document.getElementById('hourlyRate').addEventListener('input', function() {
+                calculateTotal();
+                validateForm();
+            });
+
+            // Form validation on submit
+            const form = document.querySelector('form');
+            form.addEventListener('submit', function(e) {
+                const files = document.getElementById('supportingDocuments').files;
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    const fileSize = file.size / 1024 / 1024; // MB
+                    if (fileSize > 5) {
+                        e.preventDefault();
+                        alert(`File "${file.name}" exceeds 5MB limit. Please select smaller files.`);
+                        return;
+                    }
+                }
+
+                if (!validateForm()) {
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
+}

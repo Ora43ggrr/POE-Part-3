@@ -1,0 +1,118 @@
+﻿@model List<POE_Part_3.Models.Claim>
+@{
+    ViewData["Title"] = "Payment Processing";
+}
+
+<div class="container">
+    <h2 class="text-blue mb-4">Payment Processing</h2>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Approved Claims Ready for Payment</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" asp-action="ProcessBulkPayments" id="paymentForm">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="selectAll" /></th>
+                                <th>Claim ID</th>
+                                <th>Lecturer</th>
+                                <th>Period</th>
+                                <th>Amount</th>
+                                <th>Approval Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var claim in Model)
+                            {
+                                <tr>
+                                    <td><input type="checkbox" name="claimIds" value="@claim.Id" class="claim-checkbox" /></td>
+                                    <td>@claim.ClaimId</td>
+                                    <td>@claim.LecturerName</td>
+                                    <td>@System.Globalization.DateTimeFormatInfo.CurrentInfo.GetMonthName(claim.Month) @claim.Year</td>
+                                    <td>R @claim.TotalAmount.ToString("N2")</td>
+                                    <td>@claim.ApprovalDate?.ToString("dd MMM yyyy")</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-success process-single" data-claim-id="@claim.Id">
+                                            Process Single
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                            @if (!Model.Any())
+                            {
+                                <tr>
+                                    <td colspan="7" class="text-center">No claims ready for payment</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                @if (Model.Any())
+                {
+                    <div class="mt-3">
+                        <button type="submit" class="btn btn-success">Process Selected Payments</button>
+                        <span class="ms-2 text-muted" id="selectedCount">0 claims selected</span>
+                    </div>
+                }
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Select all checkboxes
+            document.getElementById('selectAll').addEventListener('change', function() {
+                var checkboxes = document.getElementsByClassName('claim-checkbox');
+                for (var checkbox of checkboxes) {
+                    checkbox.checked = this.checked;
+                }
+                updateSelectedCount();
+            });
+
+            // Update selected count
+            function updateSelectedCount() {
+                var selected = document.querySelectorAll('.claim-checkbox:checked').length;
+                document.getElementById('selectedCount').textContent = selected + ' claims selected';
+            }
+
+            var checkboxes = document.getElementsByClassName('claim-checkbox');
+            for (var checkbox of checkboxes) {
+                checkbox.addEventListener('change', updateSelectedCount);
+            }
+
+            // Process single claim
+            var singleButtons = document.getElementsByClassName('process-single');
+            for (var button of singleButtons) {
+                button.addEventListener('click', function() {
+                    var claimId = this.getAttribute('data-claim-id');
+                    if (confirm('Process payment for this claim?')) {
+                        // Submit the form with just this claim
+                        var form = document.getElementById('paymentForm');
+                        var input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'claimIds';
+                        input.value = claimId;
+                        form.appendChild(input);
+                        form.submit();
+                    }
+                });
+            }
+        });
+    </script>
+}

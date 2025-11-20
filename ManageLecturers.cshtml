@@ -1,0 +1,52 @@
+﻿@model List<POE_Part_3.Models.User>
+@inject POE_Part_3.Services.DataService _dataService
+@{
+    ViewData["Title"] = "Manage Lecturers";
+}
+
+<div class="container">
+    <h2 class="text-blue mb-4">Manage Lecturers</h2>
+
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Lecturers with Active Claims</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Active Claims</th>
+                            <th>Total Amount (YTD)</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var lecturer in Model)
+                        {
+                            var activeClaims = _dataService.Claims.Count(c => c.LecturerName == lecturer.Username && c.Status != "Paid");
+                            var totalAmount = _dataService.Claims
+                            .Where(c => c.LecturerName == lecturer.Username && c.Year == DateTime.Now.Year)
+                            .Sum(c => c.TotalAmount);
+
+                            <tr>
+                                <td>@lecturer.Username</td>
+                                <td>@lecturer.Email</td>
+                                <td>@lecturer.Role</td>
+                                <td>@activeClaims</td>
+                                <td>R @totalAmount.ToString("N2")</td>
+                                <td>
+                                    <a href="#" class="btn btn-sm btn-outline-primary">View Claims</a>
+                                    <a href="#" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,70 @@
+﻿@{
+    ViewData["Title"] = "Register";
+}
+
+<div class="register-container">
+    <h2 class="text-center text-blue mb-4">Create an Account</h2>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+
+    <form method="post" asp-action="Register">
+        <div class="mb-3">
+            <label for="username" class="form-label">Full Name</label>
+            <input type="text" class="form-control" id="username" name="username" placeholder="Enter your full name" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="userRole" class="form-label">Role</label>
+            <select class="form-select" id="userRole" name="userRole" required>
+                <option value="">Select your role</option>
+                <option value="Lecturer">Lecturer</option>
+                <option value="ProgrammeCoordinator">Programme Coordinator</option>
+                <option value="AcademicManager">Academic Manager</option>
+                <option value="HR">HR Manager</option>
+            </select>
+            <div class="form-text">
+                <strong>Role Descriptions:</strong><br>
+                • <strong>Lecturer:</strong> Submit claims and upload documents<br>
+                • <strong>Programme Coordinator:</strong> Review and approve claims<br>
+                • <strong>Academic Manager:</strong> Manage all claims and reports<br>
+                • <strong>HR Manager:</strong> Process payments and manage lecturers
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label for="Email" class="form-label">Email Address</label>
+            <input type="email" class="form-control" id="Email" name="email" placeholder="Enter your email address" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="Password" class="form-label">Password</label>
+            <input type="password" class="form-control" id="Password" name="password" placeholder="Create a password" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="confirmPassword" class="form-label">Confirm Password</label>
+            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" placeholder="Confirm your password" required>
+        </div>
+
+        <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="termsAgree" required>
+            <label class="form-check-label" for="termsAgree">I agree to the Terms and Conditions</label>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">Register</button>
+
+        <hr class="my-4">
+
+        <p class="text-center">
+            Already have an account?
+            <a href="@Url.Action("Index", "Home")" class="text-blue fw-bold">Login here</a>
+        </p>
+    </form>
+</div>

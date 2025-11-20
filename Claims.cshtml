@@ -1,0 +1,77 @@
+﻿@model List<POE_Part_3.Models.Claim>
+@{
+    ViewData["Title"] = "My Claims";
+}
+
+<div class="container">
+    <h2 class="text-blue mb-4">My Claims</h2>
+
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">All Submitted Claims</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Claim ID</th>
+                            <th>Period</th>
+                            <th>Hours</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Submission Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var claim in Model)
+                        {
+                            <tr>
+                                <td>@claim.ClaimId</td>
+                                <td>@System.Globalization.DateTimeFormatInfo.CurrentInfo.GetMonthName(claim.Month) @claim.Year</td>
+                                <td>@claim.HoursWorked</td>
+                                <td>R @claim.TotalAmount.ToString("N2")</td>
+                                <td><span class="status-badge status-@claim.Status.ToLower()">@claim.Status</span></td>
+                                <td>@claim.SubmissionDate.ToString("dd MMM yyyy")</td>
+                                <td>
+                                    <a href="@Url.Action("ClaimDetails", new { id = claim.Id })" class="btn btn-sm btn-outline-primary me-1">View</a>
+                                    @if (claim.Status == "Submitted")
+                                    {
+                                        <button class="btn btn-sm btn-outline-danger" onclick="confirmDelete(@claim.Id)">Delete</button>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn btn-sm btn-outline-secondary" disabled>Delete</button>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center">No claims submitted yet</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="text-center mt-3">
+                <a href="@Url.Action("SubmitClaim", "Home")" class="btn btn-primary">Submit New Claim</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function confirmDelete(claimId) {
+            if (confirm('Are you sure you want to delete this claim? This action cannot be undone.')) {
+                // In a real application, you would make an AJAX call or form submission here
+                alert('Delete functionality would be implemented here for claim ID: ' + claimId);
+                // Example: window.location.href = '/Home/DeleteClaim/' + claimId;
+            }
+        }
+    </script>
+}
