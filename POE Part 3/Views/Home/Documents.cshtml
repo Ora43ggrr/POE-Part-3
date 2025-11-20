@@ -1,0 +1,113 @@
+﻿@model List<POE_Part_3.Models.Document>
+@{
+    ViewData["Title"] = "Documents"; // Sets the page title
+}
+
+<div class="container">
+    <!-- Main container -->
+    <h2 class="text-blue mb-4">Document Management</h2> <!-- Page heading -->
+    @if (TempData["Error"] != null) // Check for error messages
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div> <!-- Display error message -->
+    }
+    @if (TempData["Success"] != null) // Check for success messages
+    {
+        <div class="alert alert-success">@TempData["Success"]</div> <!-- Display success message -->
+    }
+
+    <div class="card mb-4">
+        <!-- Upload card -->
+        <div class="card-header">
+            <!-- Card header -->
+            <h5 class="mb-0">Upload New Document</h5> <!-- Section title -->
+        </div>
+        <div class="card-body">
+            <!-- Card body -->
+            <form method="post" asp-action="UploadDocument" enctype="multipart/form-data">
+                <!-- Upload form with file encoding -->
+                <div class="mb-3">
+                    <!-- File upload section -->
+                    <label for="file" class="form-label">Select File</label> <!-- File label -->
+                    <input type="file" class="form-control" id="file" name="file" accept=".pdf,.jpg,.png,.docx,.xlsx" required> <!-- File input -->
+                    <div class="form-text">Maximum file size: 5MB. Supported formats: PDF, JPG, PNG, DOCX, XLSX</div> <!-- Upload restrictions -->
+                </div>
+
+                <div class="mb-3">
+                    <!-- Document type selection -->
+                    <label for="documentType" class="form-label">Document Type</label> <!-- Type label -->
+                    <select class="form-select" id="documentType" name="documentType" required>
+                        <!-- Type dropdown -->
+                        <option value="">Select document type</option> <!-- Default option -->
+                        <option value="Timesheet">Timesheet</option> <!-- Timesheet option -->
+                        <option value="Invoice">Invoice</option> <!-- Invoice option -->
+                        <option value="Contract">Contract</option> <!-- Contract option -->
+                        <option value="Qualification">Qualification</option> <!-- Qualification option -->
+                        <option value="Other">Other</option> <!-- Other option -->
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <!-- Document description -->
+                    <label for="documentDescription" class="form-label">Description</label> <!-- Description label -->
+                    <input type="text" class="form-control" id="documentDescription" name="documentDescription" placeholder="Brief description of the document" required> <!-- Description input -->
+                </div>
+
+                <button type="submit" class="btn btn-primary">Upload Document</button> <!-- Upload button -->
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <!-- Documents list card -->
+        <div class="card-header">
+            <!-- Card header -->
+            <h5 class="mb-0">My Documents</h5> <!-- Section title -->
+        </div>
+        <div class="card-body">
+            <!-- Card body -->
+            <div class="table-responsive">
+                <!-- Responsive table container -->
+                <table class="table table-hover">
+                    <!-- Documents table -->
+                    <thead>
+                        <!-- Table header -->
+                        <tr>
+                            <!-- Header row -->
+                            <th>Document Name</th> <!-- Name column -->
+                            <th>Type</th> <!-- Type column -->
+                            <th>Description</th> <!-- Description column -->
+                            <th>Upload Date</th> <!-- Date column -->
+                            <th>Size</th> <!-- Size column -->
+                            <th>Actions</th> <!-- Actions column -->
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Table body -->
+                        @foreach (var document in Model) // Loop through documents
+                        {
+                            <tr>
+                                <!-- Document row -->
+                                <td>@document.FileName</td> <!-- Document name -->
+                                <td>@document.DocumentType</td> <!-- Document type -->
+                                <td>@document.Description</td> <!-- Document description -->
+                                <td>@document.UploadDate.ToString("dd MMM yyyy")</td> <!-- Upload date -->
+                                <td>@((document.FileSize / 1024f / 1024f).ToString("0.0")) MB</td> <!-- File size -->
+                                <td>
+                                    <!-- Actions cell -->
+                                    <a href="#" class="btn btn-sm btn-outline-primary me-1">View</a> <!-- View button -->
+                                    <a href="#" class="btn btn-sm btn-outline-danger">Delete</a> <!-- Delete button -->
+                                </td>
+                            </tr>
+                        }
+                        @if (!Model.Any()) // Check if no documents
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center">No documents uploaded yet</td> <!-- Empty state message -->
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

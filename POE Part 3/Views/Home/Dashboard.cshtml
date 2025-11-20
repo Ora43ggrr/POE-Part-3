@@ -1,0 +1,224 @@
+﻿@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="container">
+    <h2 class="text-blue mb-4">Dashboard</h2>
+
+    <!-- HR Specific Welcome -->
+    @if (Context.Session.GetString("UserRole") == "HR")
+    {
+        <div class="alert alert-success">
+            <h4><i class="fas fa-user-tie"></i> HR Management Dashboard</h4>
+            <p class="mb-0">Welcome to the HR Management system. You have access to payment processing, lecturer management, and financial reports.</p>
+        </div>
+    }
+
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card dashboard-widget">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Pending Claims</h5>
+                    <h2 class="text-blue">@(ViewBag.PendingClaims ?? 0)</h2>
+                    <p class="card-text">Awaiting review</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card dashboard-widget">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Approved Claims</h5>
+                    <h2 class="text-blue">@(ViewBag.ApprovedClaims ?? 0)</h2>
+                    <p class="card-text">This year</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card dashboard-widget">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Total Amount</h5>
+                    <h2 class="text-blue">R @((ViewBag.TotalAmount ?? 0).ToString("N2"))</h2>
+                    <p class="card-text">Year to date</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card dashboard-widget">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Documents</h5>
+                    <h2 class="text-blue">@(ViewBag.DocumentCount ?? 0)</h2>
+                    <p class="card-text">Uploaded files</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Additional Metrics for Coordinators, Managers, and HR -->
+    @if (ViewBag.UserRole == "ProgrammeCoordinator" || ViewBag.UserRole == "AcademicManager" || ViewBag.UserRole == "HR")
+    {
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="card dashboard-widget">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Total System Claims</h5>
+                        <h2 class="text-blue">@(ViewBag.TotalClaims ?? 0)</h2>
+                        <p class="card-text">All users</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <div class="card dashboard-widget">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Pending System Claims</h5>
+                        <h2 class="text-blue">@(ViewBag.TotalPendingClaims ?? 0)</h2>
+                        <p class="card-text">Awaiting review</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <div class="card dashboard-widget">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Approved for Payment</h5>
+                        <h2 class="text-blue">@(ViewBag.ApprovedForPayment ?? 0)</h2>
+                        <p class="card-text">Ready to pay</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <div class="card dashboard-widget">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">System Role</h5>
+                        <h2 class="text-blue">@ViewBag.UserRole</h2>
+                        <p class="card-text">Your access level</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-md-8 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Recent Claims</h5>
+                </div>
+                <div class="card-body">
+                    @{
+                        var userClaims = ViewBag.UserClaims as List<POE_Part_3.Models.Claim> ?? new List<POE_Part_3.Models.Claim>();
+                        var recentClaims = userClaims.OrderByDescending(c => c.SubmissionDate).Take(3).ToList();
+                    }
+
+                    @foreach (var claim in recentClaims)
+                    {
+                        <div class="claim-card p-3 mb-3">
+                            <div class="d-flex justify-content-between">
+                                <h6>@System.Globalization.DateTimeFormatInfo.CurrentInfo.GetMonthName(claim.Month) @claim.Year Claim</h6>
+                                <span class="status-badge status-@claim.Status.ToLower()">@claim.Status</span>
+                            </div>
+                            <p class="mb-1">Hours: @claim.HoursWorked | Amount: R @claim.TotalAmount.ToString("N2")</p>
+                            <small class="text-muted">Submitted: @claim.SubmissionDate.ToString("dd MMM yyyy")</small>
+                            <div class="mt-2">
+                                <a href="@Url.Action("ClaimDetails", new { id = claim.Id })" class="btn btn-sm btn-outline-primary">View Details</a>
+                            </div>
+                        </div>
+                    }
+
+                    @if (!recentClaims.Any())
+                    {
+                        <p class="text-center text-muted">No claims submitted yet</p>
+                    }
+
+                    <div class="text-center mt-3">
+                        <a href="@Url.Action("Claims","Home")" class="btn btn-outline-primary">View All Claims</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="@Url.Action("SubmitClaim","Home")" class="btn btn-primary">Submit New Claim</a>
+                        <a href="@Url.Action("Documents","Home")" class="btn btn-outline-primary">Upload Documents</a>
+                        <a href="@Url.Action("Claims","Home")" class="btn btn-outline-primary">Check Status</a>
+
+                        @if (ViewBag.UserRole == "ProgrammeCoordinator" || ViewBag.UserRole == "AcademicManager")
+                        {
+                            <a href="@Url.Action("ReviewClaims","Home")" class="btn btn-outline-warning">Review Claims</a>
+                            <a href="@Url.Action("AllClaims","Home")" class="btn btn-outline-info">View All Claims</a>
+                            <a href="@Url.Action("Reports","Home")" class="btn btn-outline-success">View Reports</a>
+                        }
+
+                        @if (ViewBag.UserRole == "HR")
+                        {
+                            <a href="@Url.Action("PaymentProcessing","Home")" class="btn btn-outline-success">Process Payments</a>
+                            <a href="@Url.Action("ManageLecturers","Home")" class="btn btn-outline-info">Manage Lecturers</a>
+                            <a href="@Url.Action("Reports","Home")" class="btn btn-outline-warning">Financial Reports</a>
+                        }
+
+                        <!-- Reports accessible to all management roles -->
+                        @if (ViewBag.UserRole == "ProgrammeCoordinator" || ViewBag.UserRole == "AcademicManager" || ViewBag.UserRole == "HR")
+                        {
+                            <a href="@Url.Action("Reports","Home")" class="btn btn-outline-secondary">
+                                <i class="fas fa-chart-bar"></i> View Reports
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Notifications</h5>
+                </div>
+                <div class="card-body">
+                    @if (ViewBag.PendingClaims > 0)
+                    {
+                        <div class="alert alert-warning p-2 mb-2">
+                            <small>You have @ViewBag.PendingClaims pending claims awaiting review.</small>
+                        </div>
+                    }
+
+                    @if (ViewBag.ApprovedClaims > 0)
+                    {
+                        <div class="alert alert-success p-2 mb-2">
+                            <small>You have @ViewBag.ApprovedClaims approved claims this year.</small>
+                        </div>
+                    }
+
+                    @if (ViewBag.UserRole == "ProgrammeCoordinator" || ViewBag.UserRole == "AcademicManager")
+                    {
+                        <div class="alert alert-info p-2 mb-2">
+                            <small>There are @ViewBag.TotalPendingClaims system claims pending review.</small>
+                        </div>
+                    }
+
+                    @if (ViewBag.UserRole == "HR")
+                    {
+                        <div class="alert alert-success p-2 mb-2">
+                            <small>There are @ViewBag.ApprovedForPayment claims approved and ready for payment processing.</small>
+                        </div>
+                    }
+
+                    <div class="alert alert-secondary p-2">
+                        <small>Welcome to the Contract Monthly Claim System!</small>
+                    </div>
+
+                    <div class="text-center mt-2">
+                        <a href="@Url.Action("Notifications","Home")" class="btn btn-sm btn-outline-primary">View All Notifications</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
